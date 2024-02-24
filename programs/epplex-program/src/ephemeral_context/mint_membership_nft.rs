@@ -38,6 +38,10 @@ pub struct CreateMembership<'info> {
 
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut)]
+    /// CHECK
+    pub membership: Signer<'info>,
     #[account(
         mut,
         seeds = [
@@ -49,11 +53,7 @@ pub struct CreateMembership<'info> {
         bump
     )]
     /// CHECK
-    pub payer_fraction_ata: UncheckedAccount<'info>,
-
-    #[account(mut)]
-    /// CHECK
-    pub membership: UncheckedAccount<'info>,
+    pub membership_ata: UncheckedAccount<'info>,
     
     #[account(
         seeds = [b"ephemeral_rule", rule.seed.to_le_bytes().as_ref()],
@@ -71,6 +71,7 @@ pub struct CreateMembership<'info> {
 
     /// CHECK:
     #[account(
+        mut,
         seeds = [b"ephemeral_auth"],
         bump
     )]
@@ -206,7 +207,7 @@ impl<'info> CreateMembership<'info> {
         )?;
 
         let seeds: &[&[u8]; 2] = &[
-            b"auth",
+            b"ephemeral_auth",
             &[bumps.auth],
         ];
         let signer_seeds = &[&seeds[..]];
@@ -217,7 +218,7 @@ impl<'info> CreateMembership<'info> {
                 &self.membership.key(),
                 &self.auth.key(),
                 &self.membership.key(),
-                &self.auth.key(),
+                &self.payer.key(),
                 metadata.name,
                 metadata.symbol,
                 metadata.uri,
@@ -225,6 +226,7 @@ impl<'info> CreateMembership<'info> {
             &vec![
                 self.membership.to_account_info(),
                 self.auth.to_account_info(),
+                self.payer.to_account_info(),
             ],
             signer_seeds
         )?;
@@ -237,7 +239,7 @@ impl<'info> CreateMembership<'info> {
                 self.token_2022_program.to_account_info(),
                 Create {
                     payer: self.payer.to_account_info(), // payer
-                    associated_token: self.payer_fraction_ata.to_account_info(),
+                    associated_token: self.membership_ata.to_account_info(),
                     authority: self.payer.to_account_info(), // owner
                     mint: self.membership.to_account_info(),
                     system_program: self.system_program.to_account_info(),
@@ -252,7 +254,7 @@ impl<'info> CreateMembership<'info> {
                 self.token_2022_program.to_account_info(),
                 MintTo {
                     mint: self.membership.to_account_info(),
-                    to: self.payer_fraction_ata.to_account_info(),
+                    to: self.membership_ata.to_account_info(),
                     authority: self.payer.to_account_info(),
                 }
             ),

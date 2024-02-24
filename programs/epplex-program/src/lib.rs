@@ -23,11 +23,12 @@ pub mod epplex_program {
 
     pub fn modify_rule(
         ctx: Context<ManageRule>,
+        seed: u64,
         rule_creator: Pubkey,
         renewal_price: u64,
         treasury: Pubkey,
     ) -> Result<()> {
-        ctx.accounts.modify_rule(rule_creator, renewal_price, treasury)
+        ctx.accounts.modify_rule(seed, rule_creator, renewal_price, treasury)
     }
 
     pub fn create_membership(
