@@ -11,6 +11,7 @@ import {
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID
 } from "@solana/spl-token";
+import { ASSOCIATED_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 
 
 describe("epplex-program", () => {
@@ -82,6 +83,7 @@ describe("epplex-program", () => {
       data,
       auth,
       rent: SYSVAR_RENT_PUBKEY,
+      associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
       token2022Program: TOKEN_2022_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     })
@@ -90,19 +92,19 @@ describe("epplex-program", () => {
 
   it("Add Time to Membership", async () => {
     await program.methods
-    .addTime(new anchor.BN(endingTime as unknown as number + 7 * 24 * 3600))
+    .addTime(new anchor.BN(7 * 24))
     .accounts({
       treasury,
       membership: membership.publicKey, 
       rule, 
       data, 
     })
-    .signers([wallet.payer]).rpc().then(confirm).then(log);
+    .signers([wallet.payer]).rpc({skipPreflight: true}).then(confirm).then(log);
   });
 
   it("Remove Time to Membership", async () => {
     await program.methods
-    .removeTime(new anchor.BN(endingTime as unknown as number - 15 * 24 * 3600))
+    .removeTime(new anchor.BN(15 * 24))
     .accounts({
       treasury,
       membership: membership.publicKey, 
@@ -125,7 +127,7 @@ describe("epplex-program", () => {
       auth,
       token2022Program: TOKEN_2022_PROGRAM_ID,
     })
-    .signers([wallet.payer]).rpc().then(confirm).then(log);
+    .signers([wallet.payer]).rpc({skipPreflight: true}).then(confirm).then(log);
   });
 
 

@@ -8,7 +8,7 @@ pub use anchor_lang::{
 
 pub use anchor_spl::{
     token_2022::{Token2022, spl_token_2022::instruction::AuthorityType},
-    associated_token::{Create, create, ID as ASSOCIATED_TOKEN_PROGRAM_ID},
+    associated_token::{Create, create, AssociatedToken},
     token_interface::{MintTo, mint_to, SetAuthority, set_authority},
 };
 
@@ -49,7 +49,7 @@ pub struct CreateMembership<'info> {
             token_2022_program.key().as_ref(),
             membership.key().as_ref()
         ],
-        seeds::program = ASSOCIATED_TOKEN_PROGRAM_ID,
+        seeds::program = associated_token_program.key(),
         bump
     )]
     /// CHECK
@@ -80,6 +80,7 @@ pub struct CreateMembership<'info> {
     #[account(address = RENT_ID)]
     /// CHECK: this is fine since we are hard coding the rent sysvar.
     pub rent: UncheckedAccount<'info>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_2022_program: Program<'info, Token2022>,
     pub system_program: Program<'info, System>,
 }
@@ -236,7 +237,7 @@ impl<'info> CreateMembership<'info> {
         // 4.1: Initialize ATA
         create(
             CpiContext::new(
-                self.token_2022_program.to_account_info(),
+                self.associated_token_program.to_account_info(),
                 Create {
                     payer: self.payer.to_account_info(), // payer
                     associated_token: self.membership_ata.to_account_info(),
